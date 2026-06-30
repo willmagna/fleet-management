@@ -12,6 +12,8 @@ import {
 import { VehiclesService } from './vehicles.service';
 import { Vehicle } from './vehicle.entity';
 import { VehicleStatusHistory } from './vehicle-status-history.entity';
+import { CreateVehicleDto } from './dto/create-vehicle.dto';
+import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { ChangeStatusDto } from './dto/change-status.dto';
 
 @Controller('vehicles')
@@ -35,7 +37,7 @@ export class VehiclesController {
 
   @Post()
   create(
-    @Body() body: Partial<Vehicle>,
+    @Body() body: CreateVehicleDto,
     @Request() req: { user: { nickname: string } },
   ): Promise<Vehicle> {
     return this.vehiclesService.create(body, req.user.nickname);
@@ -44,7 +46,7 @@ export class VehiclesController {
   @Put(':id')
   update(
     @Param('id') id: string,
-    @Body() body: Partial<Vehicle>,
+    @Body() body: UpdateVehicleDto,
     @Request() req: { user: { nickname: string } },
   ): Promise<Vehicle> {
     return this.vehiclesService.update(id, body, req.user.nickname);

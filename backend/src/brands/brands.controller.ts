@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { BrandsService } from './brands.service';
 import { Brand } from './brand.entity';
+import { CreateBrandDto } from './dto/create-brand.dto';
+import { UpdateBrandDto } from './dto/update-brand.dto';
 
 @Controller('brands')
 export class BrandsController {
@@ -27,7 +29,7 @@ export class BrandsController {
 
   @Post()
   create(
-    @Body() body: Partial<Brand>,
+    @Body() body: CreateBrandDto,
     @Request() req: { user: { nickname: string } },
   ): Promise<Brand> {
     return this.brandsService.create(body, req.user.nickname);
@@ -36,7 +38,7 @@ export class BrandsController {
   @Put(':id')
   update(
     @Param('id') id: string,
-    @Body() body: Partial<Brand>,
+    @Body() body: UpdateBrandDto,
     @Request() req: { user: { nickname: string } },
   ): Promise<Brand> {
     return this.brandsService.update(id, body, req.user.nickname);

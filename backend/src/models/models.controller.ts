@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { ModelsService } from './models.service';
 import { Model } from './model.entity';
+import { CreateModelDto } from './dto/create-model.dto';
+import { UpdateModelDto } from './dto/update-model.dto';
 
 @Controller('models')
 export class ModelsController {
@@ -27,7 +29,7 @@ export class ModelsController {
 
   @Post()
   create(
-    @Body() body: Partial<Model>,
+    @Body() body: CreateModelDto,
     @Request() req: { user: { nickname: string } },
   ): Promise<Model> {
     return this.modelsService.create(body, req.user.nickname);
@@ -36,7 +38,7 @@ export class ModelsController {
   @Put(':id')
   update(
     @Param('id') id: string,
-    @Body() body: Partial<Model>,
+    @Body() body: UpdateModelDto,
     @Request() req: { user: { nickname: string } },
   ): Promise<Model> {
     return this.modelsService.update(id, body, req.user.nickname);
