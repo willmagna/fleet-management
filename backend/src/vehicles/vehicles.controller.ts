@@ -67,11 +67,18 @@ export class VehiclesController {
     @Body() body: ChangeStatusDto,
     @Request() req: { user: { nickname: string } },
   ): Promise<Vehicle> {
-    return this.vehiclesService.changeStatus(id, body.status, req.user.nickname, body.notes);
+    return this.vehiclesService.changeStatus(
+      id,
+      body.status,
+      req.user.nickname,
+      body.notes,
+    );
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Soft-delete a vehicle (sets active = false, status = inativo)' })
+  @ApiOperation({
+    summary: 'Soft-delete a vehicle (sets active = false, status = inativo)',
+  })
   remove(
     @Param('id') id: string,
     @Request() req: { user: { nickname: string } },

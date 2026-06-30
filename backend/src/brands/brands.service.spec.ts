@@ -1,4 +1,5 @@
 import { NotFoundException } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { Brand } from './brand.entity';
@@ -23,6 +24,7 @@ const mockRabbitClient = () => ({
 describe('BrandsService', () => {
   let service: BrandsService;
   let repo: jest.Mocked<Repository<Brand>>;
+  let cache: { get: jest.Mock; set: jest.Mock; del: jest.Mock };
   let rabbitClient: ReturnType<typeof mockRabbitClient>;
 
   beforeEach(async () => {
@@ -34,12 +36,14 @@ describe('BrandsService', () => {
       update: jest.fn(),
     };
 
+    cache = { get: jest.fn(), set: jest.fn(), del: jest.fn() };
     rabbitClient = mockRabbitClient();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BrandsService,
         { provide: 'BRAND_REPOSITORY', useValue: mockRepo },
+        { provide: CACHE_MANAGER, useValue: cache },
         { provide: 'RABBITMQ_CLIENT', useValue: rabbitClient },
       ],
     }).compile();
@@ -49,7 +53,18 @@ describe('BrandsService', () => {
   });
 
   describe('findAll', () => {
-    it('returns only active brands', async () => {
+    it('returns cached brands without hitting the database', async () => {
+      const brands = [makeBrand()];
+      cache.get.mockResolvedValue(brands);
+
+      const result = await service.findAll();
+
+      expect(result).toEqual(brands);
+      expect(cache.get).toHaveBeenCalledWith('brands:all');
+      expect(repo.find).not.toHaveBeenCalled();
+    });
+
+    it('queries the database on cache miss, returns only active brands and caches the result', async () => {
       const brands = [makeBrand()];
       repo.find.mockResolvedValue(brands);
 
@@ -57,6 +72,7 @@ describe('BrandsService', () => {
 
       expect(result).toEqual(brands);
       expect(repo.find).toHaveBeenCalledWith({ where: { active: true } });
+      expect(cache.set).toHaveBeenCalledWith('brands:all', brands);
     });
 
     it('returns empty array when no active brands exist', async () => {
@@ -67,7 +83,18 @@ describe('BrandsService', () => {
   });
 
   describe('findOne', () => {
-    it('returns the brand when found and active', async () => {
+    it('returns the cached brand without hitting the database', async () => {
+      const brand = makeBrand();
+      cache.get.mockResolvedValue(brand);
+
+      const result = await service.findOne('1');
+
+      expect(result).toEqual(brand);
+      expect(cache.get).toHaveBeenCalledWith('brands:1');
+      expect(repo.findOneBy).not.toHaveBeenCalled();
+    });
+
+    it('queries the database on cache miss and caches the result', async () => {
       const brand = makeBrand();
       repo.findOneBy.mockResolvedValue(brand);
 
@@ -75,6 +102,7 @@ describe('BrandsService', () => {
 
       expect(result).toEqual(brand);
       expect(repo.findOneBy).toHaveBeenCalledWith({ id: 1, active: true });
+      expect(cache.set).toHaveBeenCalledWith('brands:1', brand);
     });
 
     it('throws NotFoundException when brand does not exist', async () => {
@@ -117,6 +145,16 @@ describe('BrandsService', () => {
         expect.objectContaining({ action: 'created', entity: 'brand', entityId: brand.id }),
       );
     });
+
+    it('invalidates the list cache after creating a brand', async () => {
+      const brand = makeBrand();
+      repo.create.mockReturnValue(brand);
+      repo.save.mockResolvedValue(brand);
+
+      await service.create({ name: 'Toyota' }, 'aivacol');
+
+      expect(cache.del).toHaveBeenCalledWith('brands:all');
+    });
   });
 
   describe('update', () => {
@@ -158,6 +196,18 @@ describe('BrandsService', () => {
         NotFoundException,
       );
     });
+
+    it('invalidates the list and item cache after updating', async () => {
+      const brand = makeBrand();
+      const updated = makeBrand({ name: 'Toyota Updated', updatedBy: 'aivacol' });
+      repo.findOneBy.mockResolvedValueOnce(brand).mockResolvedValueOnce(updated);
+      repo.update.mockResolvedValue({ affected: 1, raw: [], generatedMaps: [] });
+
+      await service.update('1', { name: 'Toyota Updated' }, 'aivacol');
+
+      expect(cache.del).toHaveBeenCalledWith('brands:all');
+      expect(cache.del).toHaveBeenCalledWith('brands:1');
+    });
   });
 
   describe('remove', () => {
@@ -173,6 +223,17 @@ describe('BrandsService', () => {
         updatedBy: 'aivacol',
       });
       expect(result).toEqual({ status: 'ok', message: 'brand id: 1 has been deleted' });
+    });
+
+    it('invalidates the list and item cache after removing', async () => {
+      const brand = makeBrand();
+      repo.findOneBy.mockResolvedValue(brand);
+      repo.update.mockResolvedValue({ affected: 1, raw: [], generatedMaps: [] });
+
+      await service.remove('1', 'aivacol');
+
+      expect(cache.del).toHaveBeenCalledWith('brands:all');
+      expect(cache.del).toHaveBeenCalledWith('brands:1');
     });
 
     it('emits a fleet.audit event after removing', async () => {

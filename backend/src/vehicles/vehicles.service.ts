@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ClientProxy } from '@nestjs/microservices';
 import type { Cache } from 'cache-manager';
@@ -27,7 +32,9 @@ export class VehiclesService {
     const cached = await this.cache.get<Vehicle[]>(CACHE_KEY_ALL);
     if (cached) return cached;
 
-    const vehicles = await this.vehicleRepository.find({ where: { active: true } });
+    const vehicles = await this.vehicleRepository.find({
+      where: { active: true },
+    });
     await this.cache.set(CACHE_KEY_ALL, vehicles);
     return vehicles;
   }
@@ -55,7 +62,10 @@ export class VehiclesService {
   }
 
   async create(payload: Partial<Vehicle>, nickname: string): Promise<Vehicle> {
-    const vehicle = this.vehicleRepository.create({ ...payload, createdBy: nickname });
+    const vehicle = this.vehicleRepository.create({
+      ...payload,
+      createdBy: nickname,
+    });
     const saved = await this.vehicleRepository.save(vehicle);
 
     await this.statusHistoryRepository.save(
@@ -85,9 +95,16 @@ export class VehiclesService {
     return saved;
   }
 
-  async update(id: string, payload: Partial<Vehicle>, nickname: string): Promise<Vehicle> {
+  async update(
+    id: string,
+    payload: Partial<Vehicle>,
+    nickname: string,
+  ): Promise<Vehicle> {
     await this.findOne(id);
-    await this.vehicleRepository.update(id, { ...payload, updatedBy: nickname });
+    await this.vehicleRepository.update(id, {
+      ...payload,
+      updatedBy: nickname,
+    });
     await this.cache.del(CACHE_KEY_ALL);
     await this.cache.del(cacheKeyOne(id));
     const updated = await this.findOne(id);
@@ -115,11 +132,16 @@ export class VehiclesService {
     const vehicle = await this.findOne(id);
 
     if (vehicle.status === newStatus) {
-      throw new BadRequestException(`Vehicle is already in status '${newStatus}'`);
+      throw new BadRequestException(
+        `Vehicle is already in status '${newStatus}'`,
+      );
     }
 
     const fromStatus = vehicle.status;
-    await this.vehicleRepository.update(id, { status: newStatus, updatedBy: nickname });
+    await this.vehicleRepository.update(id, {
+      status: newStatus,
+      updatedBy: nickname,
+    });
 
     await this.statusHistoryRepository.save(
       this.statusHistoryRepository.create({

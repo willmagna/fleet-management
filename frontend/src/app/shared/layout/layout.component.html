@@ -1,0 +1,21 @@
+<mat-toolbar color="primary" class="toolbar">
+  <mat-icon class="logo-icon">directions_car</mat-icon>
+  <span class="brand-name">Aivacol Fleet</span>
+
+  <nav class="nav-links">
+    <a mat-button routerLink="/vehicles" routerLinkActive="active-link">
+      <mat-icon>list</mat-icon>
+      Veículos
+    </a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <button mat-icon-button (click)="logout()" matTooltip="Sair">
+    <mat-icon>logout</mat-icon>
+  </button>
+</mat-toolbar>
+
+<main class="content">
+  <router-outlet />
+</main>

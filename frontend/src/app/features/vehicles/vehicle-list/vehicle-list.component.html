@@ -1,0 +1,94 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Veículos</h1>
+      <p class="page-subtitle">Gerencie a frota da Aivacol</p>
+    </div>
+    <a mat-flat-button color="primary" routerLink="/vehicles/new">
+      <mat-icon>add</mat-icon>
+      Novo Veículo
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else if (vehicles().length === 0) {
+    <mat-card class="empty-state" appearance="outlined">
+      <mat-icon class="empty-icon">directions_car</mat-icon>
+      <p>Nenhum veículo cadastrado.</p>
+      <a mat-flat-button color="primary" routerLink="/vehicles/new">Cadastrar primeiro veículo</a>
+    </mat-card>
+  } @else {
+    <mat-card appearance="outlined" class="table-card">
+      <div class="table-wrapper">
+      <table mat-table [dataSource]="vehicles()" class="vehicles-table">
+
+        <ng-container matColumnDef="licensePlate">
+          <th mat-header-cell *matHeaderCellDef>Placa</th>
+          <td mat-cell *matCellDef="let v">
+            <span class="plate-badge">{{ v.licensePlate }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="brand">
+          <th mat-header-cell *matHeaderCellDef>Marca</th>
+          <td mat-cell *matCellDef="let v">{{ v.model?.brand?.name ?? '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="model">
+          <th mat-header-cell *matHeaderCellDef>Modelo</th>
+          <td mat-cell *matCellDef="let v">{{ v.model?.name ?? '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="year">
+          <th mat-header-cell *matHeaderCellDef>Ano</th>
+          <td mat-cell *matCellDef="let v">{{ v.year }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let v">
+            <span class="status-chip" [class]="getStatusClass(v.status)">
+              {{ statusLabels[v.status] }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="actions-header">Ações</th>
+          <td mat-cell *matCellDef="let v" class="actions-cell">
+            <button
+              mat-icon-button
+              (click)="openStatusDialog(v)"
+              matTooltip="Alterar status"
+              color="accent"
+            >
+              <mat-icon>swap_horiz</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              (click)="editVehicle(v.id)"
+              matTooltip="Editar"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="deleteVehicle(v)"
+              matTooltip="Remover"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="vehicle-row"></tr>
+      </table>
+      </div>
+    </mat-card>
+  }
+</div>

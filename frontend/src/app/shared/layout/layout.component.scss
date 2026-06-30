@@ -1,0 +1,62 @@
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 8px;
+  // mat-toolbar's `color="primary"` input has no effect under Material 3 (it
+  // always renders with surface/on-surface tokens), so the brand color has to
+  // be applied directly.
+  background-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+
+  .logo-icon {
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+
+  .brand-name {
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .nav-links {
+    margin-left: 24px;
+
+    a {
+      gap: 4px;
+      mat-icon { font-size: 18px; height: 18px; width: 18px; }
+    }
+
+    .active-link {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+  }
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+.content {
+  min-height: calc(100vh - 64px);
+  background: #f1f7f9;
+}
+
+@media (max-width: 480px) {
+  .toolbar {
+    .brand-name {
+      font-size: 0.95rem;
+    }
+
+    .nav-links {
+      margin-left: 8px;
+
+      a span {
+        display: none;
+      }
+    }
+  }
+}

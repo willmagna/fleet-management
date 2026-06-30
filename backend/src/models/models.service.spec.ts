@@ -1,4 +1,5 @@
 import { NotFoundException } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { Model } from './model.entity';
@@ -24,6 +25,7 @@ const mockRabbitClient = () => ({
 describe('ModelsService', () => {
   let service: ModelsService;
   let repo: jest.Mocked<Repository<Model>>;
+  let cache: { get: jest.Mock; set: jest.Mock; del: jest.Mock };
   let rabbitClient: ReturnType<typeof mockRabbitClient>;
 
   beforeEach(async () => {
@@ -35,12 +37,14 @@ describe('ModelsService', () => {
       update: jest.fn(),
     };
 
+    cache = { get: jest.fn(), set: jest.fn(), del: jest.fn() };
     rabbitClient = mockRabbitClient();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ModelsService,
         { provide: 'MODEL_REPOSITORY', useValue: mockRepo },
+        { provide: CACHE_MANAGER, useValue: cache },
         { provide: 'RABBITMQ_CLIENT', useValue: rabbitClient },
       ],
     }).compile();
@@ -50,7 +54,18 @@ describe('ModelsService', () => {
   });
 
   describe('findAll', () => {
-    it('returns only active models', async () => {
+    it('returns cached models without hitting the database', async () => {
+      const models = [makeModel()];
+      cache.get.mockResolvedValue(models);
+
+      const result = await service.findAll();
+
+      expect(result).toEqual(models);
+      expect(cache.get).toHaveBeenCalledWith('models:all');
+      expect(repo.find).not.toHaveBeenCalled();
+    });
+
+    it('queries the database on cache miss, returns only active models and caches the result', async () => {
       const models = [makeModel()];
       repo.find.mockResolvedValue(models);
 
@@ -58,6 +73,7 @@ describe('ModelsService', () => {
 
       expect(result).toEqual(models);
       expect(repo.find).toHaveBeenCalledWith({ where: { active: true } });
+      expect(cache.set).toHaveBeenCalledWith('models:all', models);
     });
 
     it('returns empty array when no active models exist', async () => {
@@ -68,7 +84,18 @@ describe('ModelsService', () => {
   });
 
   describe('findOne', () => {
-    it('returns the model when found and active', async () => {
+    it('returns the cached model without hitting the database', async () => {
+      const model = makeModel();
+      cache.get.mockResolvedValue(model);
+
+      const result = await service.findOne('1');
+
+      expect(result).toEqual(model);
+      expect(cache.get).toHaveBeenCalledWith('models:1');
+      expect(repo.findOneBy).not.toHaveBeenCalled();
+    });
+
+    it('queries the database on cache miss and caches the result', async () => {
       const model = makeModel();
       repo.findOneBy.mockResolvedValue(model);
 
@@ -76,6 +103,7 @@ describe('ModelsService', () => {
 
       expect(result).toEqual(model);
       expect(repo.findOneBy).toHaveBeenCalledWith({ id: 1, active: true });
+      expect(cache.set).toHaveBeenCalledWith('models:1', model);
     });
 
     it('throws NotFoundException when model does not exist', async () => {
@@ -116,6 +144,16 @@ describe('ModelsService', () => {
         'fleet.audit',
         expect.objectContaining({ action: 'created', entity: 'model', entityId: model.id }),
       );
+    });
+
+    it('invalidates the list cache after creating a model', async () => {
+      const model = makeModel();
+      repo.create.mockReturnValue(model);
+      repo.save.mockResolvedValue(model);
+
+      await service.create({ name: 'Corolla', brandId: 1 }, 'aivacol');
+
+      expect(cache.del).toHaveBeenCalledWith('models:all');
     });
   });
 
@@ -158,6 +196,18 @@ describe('ModelsService', () => {
         NotFoundException,
       );
     });
+
+    it('invalidates the list and item cache after updating', async () => {
+      const model = makeModel();
+      const updated = makeModel({ name: 'Corolla Updated', updatedBy: 'aivacol' });
+      repo.findOneBy.mockResolvedValueOnce(model).mockResolvedValueOnce(updated);
+      repo.update.mockResolvedValue({ affected: 1, raw: [], generatedMaps: [] });
+
+      await service.update('1', { name: 'Corolla Updated' }, 'aivacol');
+
+      expect(cache.del).toHaveBeenCalledWith('models:all');
+      expect(cache.del).toHaveBeenCalledWith('models:1');
+    });
   });
 
   describe('remove', () => {
@@ -173,6 +223,17 @@ describe('ModelsService', () => {
         updatedBy: 'aivacol',
       });
       expect(result).toEqual({ status: 'ok', message: 'model id: 1 has been deleted' });
+    });
+
+    it('invalidates the list and item cache after removing', async () => {
+      const model = makeModel();
+      repo.findOneBy.mockResolvedValue(model);
+      repo.update.mockResolvedValue({ affected: 1, raw: [], generatedMaps: [] });
+
+      await service.remove('1', 'aivacol');
+
+      expect(cache.del).toHaveBeenCalledWith('models:all');
+      expect(cache.del).toHaveBeenCalledWith('models:1');
     });
 
     it('emits a fleet.audit event after removing a model', async () => {
