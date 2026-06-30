@@ -1,0 +1,11 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "nickname": "aivacol",
+      "name": "Aivacol Admin",
+      "email": "aivacol@aivacol.com",
+      "password": "aivacol"
+    }
+  ]
+}

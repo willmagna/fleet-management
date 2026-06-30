@@ -24,7 +24,8 @@
     "migration:revert": "npm run typeorm -- migration:revert",
     "migration:create": "npm run typeorm -- migration:create src/database/migrations/$npm_config_name",
     "migration:show": "npm run typeorm -- migration:show",
-    "seed": "ts-node -r tsconfig-paths/register src/database/seed.ts"
+    "seed": "ts-node -r tsconfig-paths/register src/database/seed.ts",
+    "db:reset": "npm run typeorm -- schema:drop && npm run migration:run && npm run seed"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -32,6 +33,7 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/typeorm": "^11.0.3",
+    "bcryptjs": "^3.0.3",
     "pg": "^8.22.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
@@ -43,6 +45,7 @@
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
+    "@types/bcryptjs": "^2.4.6",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",

@@ -30,12 +30,15 @@ export class VehiclesController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() body: Partial<Vehicle>): Promise<Vehicle> {
+  update(
+    @Param('id') id: string,
+    @Body() body: Partial<Vehicle>,
+  ): Promise<Vehicle> {
     return this.vehiclesService.update(id, body);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<void> {
+  remove(@Param('id') id: string): Promise<object> {
     return this.vehiclesService.remove(id);
   }
 }

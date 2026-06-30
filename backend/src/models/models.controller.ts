@@ -30,12 +30,15 @@ export class ModelsController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() body: Partial<Model>): Promise<Model> {
+  update(
+    @Param('id') id: string,
+    @Body() body: Partial<Model>,
+  ): Promise<Model> {
     return this.modelsService.update(id, body);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<void> {
+  remove(@Param('id') id: string): Promise<object> {
     return this.modelsService.remove(id);
   }
 }

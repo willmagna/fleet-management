@@ -11,8 +11,8 @@ import { Brand } from '../brands/brand.entity';
 
 @Entity('models')
 export class Model {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   @Column()
   name!: string;
@@ -22,7 +22,7 @@ export class Model {
   brand!: Brand;
 
   @Column({ name: 'brand_id' })
-  brandId!: string;
+  brandId!: number;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
@@ -32,4 +32,10 @@ export class Model {
 
   @Column({ name: 'created_by' })
   createdBy!: string;
+
+  @Column({ name: 'updated_by', type: 'varchar', nullable: true })
+  updatedBy!: string | null;
+
+  @Column({ default: true })
+  active!: boolean;
 }

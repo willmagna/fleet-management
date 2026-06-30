@@ -11,8 +11,8 @@ import { Model } from '../models/model.entity';
 
 @Entity('vehicles')
 export class Vehicle {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   @Column({ name: 'license_plate', unique: true })
   licensePlate!: string;
@@ -31,7 +31,7 @@ export class Vehicle {
   model!: Model;
 
   @Column({ name: 'model_id' })
-  modelId!: string;
+  modelId!: number;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
@@ -41,4 +41,10 @@ export class Vehicle {
 
   @Column({ name: 'created_by' })
   createdBy!: string;
+
+  @Column({ name: 'updated_by', type: 'varchar', nullable: true })
+  updatedBy!: string | null;
+
+  @Column({ default: true })
+  active!: boolean;
 }

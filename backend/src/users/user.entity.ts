@@ -6,26 +6,26 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('brands')
-export class Brand {
+@Entity('users')
+export class User {
   @PrimaryGeneratedColumn()
   id!: number;
 
   @Column({ unique: true })
+  nickname!: string;
+
+  @Column()
   name!: string;
 
-  @Column({ default: true })
-  active!: boolean;
+  @Column({ unique: true })
+  email!: string;
+
+  @Column()
+  password!: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
-
-  @Column({ name: 'created_by' })
-  createdBy!: string;
-
-  @Column({ name: 'updated_by', type: 'varchar', nullable: true })
-  updatedBy!: string | null;
 }

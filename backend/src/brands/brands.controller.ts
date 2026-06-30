@@ -30,12 +30,15 @@ export class BrandsController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() body: Partial<Brand>): Promise<Brand> {
+  update(
+    @Param('id') id: string,
+    @Body() body: Partial<Brand>,
+  ): Promise<Brand> {
     return this.brandsService.update(id, body);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<void> {
+  remove(@Param('id') id: string): Promise<object> {
     return this.brandsService.remove(id);
   }
 }

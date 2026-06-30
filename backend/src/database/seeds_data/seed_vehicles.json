@@ -1,0 +1,35 @@
+{
+  "brands": [
+    { "id": 1, "name": "Toyota", "created_by": "aivacol" },
+    { "id": 2, "name": "Volkswagen", "created_by": "aivacol" },
+    { "id": 3, "name": "Fiat", "created_by": "aivacol" },
+    { "id": 4, "name": "Chevrolet", "created_by": "aivacol" },
+    { "id": 5, "name": "Honda", "created_by": "aivacol" }
+  ],
+  "models": [
+    { "id": 1,  "name": "Corolla", "brand_id": 1, "created_by": "aivacol" },
+    { "id": 2,  "name": "Hilux",   "brand_id": 1, "created_by": "aivacol" },
+    { "id": 3,  "name": "Gol",     "brand_id": 2, "created_by": "aivacol" },
+    { "id": 4,  "name": "Polo",    "brand_id": 2, "created_by": "aivacol" },
+    { "id": 5,  "name": "Strada",  "brand_id": 3, "created_by": "aivacol" },
+    { "id": 6,  "name": "Pulse",   "brand_id": 3, "created_by": "aivacol" },
+    { "id": 7,  "name": "Onix",    "brand_id": 4, "created_by": "aivacol" },
+    { "id": 8,  "name": "S10",     "brand_id": 4, "created_by": "aivacol" },
+    { "id": 9,  "name": "HR-V",    "brand_id": 5, "created_by": "aivacol" },
+    { "id": 10, "name": "Civic",   "brand_id": 5, "created_by": "aivacol" }
+  ],
+  "vehicles": [
+    { "id": 1,  "license_plate": "ABC1D23", "chassis": "9BWZZZ377VT004251", "renavam": "00123456789", "year": 2022, "model_id": 1,  "created_by": "aivacol" },
+    { "id": 2,  "license_plate": "DEF2E34", "chassis": "9BWZZZ377VT004252", "renavam": "00234567890", "year": 2023, "model_id": 1,  "created_by": "aivacol" },
+    { "id": 3,  "license_plate": "GHI3F45", "chassis": "9BWZZZ377VT004253", "renavam": "00345678901", "year": 2021, "model_id": 2,  "created_by": "aivacol" },
+    { "id": 4,  "license_plate": "JKL4G56", "chassis": "9BWZZZ377VT004254", "renavam": "00456789012", "year": 2020, "model_id": 3,  "created_by": "aivacol" },
+    { "id": 5,  "license_plate": "MNO5H67", "chassis": "9BWZZZ377VT004255", "renavam": "00567890123", "year": 2022, "model_id": 4,  "created_by": "aivacol" },
+    { "id": 6,  "license_plate": "PQR6I78", "chassis": "9BWZZZ377VT004256", "renavam": "00678901234", "year": 2023, "model_id": 5,  "created_by": "aivacol" },
+    { "id": 7,  "license_plate": "STU7J89", "chassis": "9BWZZZ377VT004257", "renavam": "00789012345", "year": 2021, "model_id": 6,  "created_by": "aivacol" },
+    { "id": 8,  "license_plate": "VWX8K90", "chassis": "9BWZZZ377VT004258", "renavam": "00890123456", "year": 2022, "model_id": 7,  "created_by": "aivacol" },
+    { "id": 9,  "license_plate": "YZA9L01", "chassis": "9BWZZZ377VT004259", "renavam": "00901234567", "year": 2020, "model_id": 8,  "created_by": "aivacol" },
+    { "id": 10, "license_plate": "BCD0M12", "chassis": "9BWZZZ377VT004260", "renavam": "01012345678", "year": 2023, "model_id": 9,  "created_by": "aivacol" },
+    { "id": 11, "license_plate": "EFG1N23", "chassis": "9BWZZZ377VT004261", "renavam": "01123456789", "year": 2024, "model_id": 10, "created_by": "aivacol" },
+    { "id": 12, "license_plate": "HIJ2O34", "chassis": "9BWZZZ377VT004262", "renavam": "01234567890", "year": 2022, "model_id": 2,  "created_by": "aivacol" }
+  ]
+}
