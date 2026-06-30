@@ -16,9 +16,14 @@ const makeBrand = (overrides: Partial<Brand> = {}): Brand =>
     ...overrides,
   }) as Brand;
 
+const mockRabbitClient = () => ({
+  emit: jest.fn().mockReturnValue({ subscribe: jest.fn() }),
+});
+
 describe('BrandsService', () => {
   let service: BrandsService;
   let repo: jest.Mocked<Repository<Brand>>;
+  let rabbitClient: ReturnType<typeof mockRabbitClient>;
 
   beforeEach(async () => {
     const mockRepo = {
@@ -29,10 +34,13 @@ describe('BrandsService', () => {
       update: jest.fn(),
     };
 
+    rabbitClient = mockRabbitClient();
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BrandsService,
         { provide: 'BRAND_REPOSITORY', useValue: mockRepo },
+        { provide: 'RABBITMQ_CLIENT', useValue: rabbitClient },
       ],
     }).compile();
 
@@ -76,7 +84,6 @@ describe('BrandsService', () => {
     });
 
     it('does not return inactive (soft-deleted) brands', async () => {
-      // The active:true filter causes findOneBy to return null for inactive records
       repo.findOneBy.mockResolvedValue(null);
 
       await expect(service.findOne('1')).rejects.toThrow(NotFoundException);
@@ -97,10 +104,23 @@ describe('BrandsService', () => {
       expect(repo.save).toHaveBeenCalledWith(brand);
       expect(result).toEqual(brand);
     });
+
+    it('emits a fleet.audit event after creating a brand', async () => {
+      const brand = makeBrand();
+      repo.create.mockReturnValue(brand);
+      repo.save.mockResolvedValue(brand);
+
+      await service.create({ name: 'Toyota' }, 'aivacol');
+
+      expect(rabbitClient.emit).toHaveBeenCalledWith(
+        'fleet.audit',
+        expect.objectContaining({ action: 'created', entity: 'brand', entityId: brand.id }),
+      );
+    });
   });
 
   describe('update', () => {
-    it('updates existing brand and sets updatedBy to the authenticated user', async () => {
+    it('updates existing brand and sets updatedBy', async () => {
       const brand = makeBrand();
       const updated = makeBrand({ name: 'Toyota Updated', updatedBy: 'aivacol' });
       repo.findOneBy
@@ -115,6 +135,20 @@ describe('BrandsService', () => {
         updatedBy: 'aivacol',
       });
       expect(result).toEqual(updated);
+    });
+
+    it('emits a fleet.audit event after updating', async () => {
+      const brand = makeBrand();
+      const updated = makeBrand({ name: 'Toyota Updated', updatedBy: 'aivacol' });
+      repo.findOneBy.mockResolvedValueOnce(brand).mockResolvedValueOnce(updated);
+      repo.update.mockResolvedValue({ affected: 1, raw: [], generatedMaps: [] });
+
+      await service.update('1', { name: 'Toyota Updated' }, 'aivacol');
+
+      expect(rabbitClient.emit).toHaveBeenCalledWith(
+        'fleet.audit',
+        expect.objectContaining({ action: 'updated', entity: 'brand', entityId: 1 }),
+      );
     });
 
     it('throws NotFoundException when brand does not exist', async () => {
@@ -139,6 +173,19 @@ describe('BrandsService', () => {
         updatedBy: 'aivacol',
       });
       expect(result).toEqual({ status: 'ok', message: 'brand id: 1 has been deleted' });
+    });
+
+    it('emits a fleet.audit event after removing', async () => {
+      const brand = makeBrand();
+      repo.findOneBy.mockResolvedValue(brand);
+      repo.update.mockResolvedValue({ affected: 1, raw: [], generatedMaps: [] });
+
+      await service.remove('1', 'aivacol');
+
+      expect(rabbitClient.emit).toHaveBeenCalledWith(
+        'fleet.audit',
+        expect.objectContaining({ action: 'deleted', entity: 'brand', entityId: 1 }),
+      );
     });
 
     it('throws NotFoundException when brand does not exist', async () => {

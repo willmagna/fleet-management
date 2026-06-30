@@ -17,9 +17,14 @@ const makeModel = (overrides: Partial<Model> = {}): Model =>
     ...overrides,
   }) as Model;
 
+const mockRabbitClient = () => ({
+  emit: jest.fn().mockReturnValue({ subscribe: jest.fn() }),
+});
+
 describe('ModelsService', () => {
   let service: ModelsService;
   let repo: jest.Mocked<Repository<Model>>;
+  let rabbitClient: ReturnType<typeof mockRabbitClient>;
 
   beforeEach(async () => {
     const mockRepo = {
@@ -30,10 +35,13 @@ describe('ModelsService', () => {
       update: jest.fn(),
     };
 
+    rabbitClient = mockRabbitClient();
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ModelsService,
         { provide: 'MODEL_REPOSITORY', useValue: mockRepo },
+        { provide: 'RABBITMQ_CLIENT', useValue: rabbitClient },
       ],
     }).compile();
 
@@ -96,6 +104,19 @@ describe('ModelsService', () => {
       expect(repo.create).toHaveBeenCalledWith({ ...payload, createdBy: 'aivacol' });
       expect(result).toEqual(model);
     });
+
+    it('emits a fleet.audit event after creating a model', async () => {
+      const model = makeModel();
+      repo.create.mockReturnValue(model);
+      repo.save.mockResolvedValue(model);
+
+      await service.create({ name: 'Corolla', brandId: 1 }, 'aivacol');
+
+      expect(rabbitClient.emit).toHaveBeenCalledWith(
+        'fleet.audit',
+        expect.objectContaining({ action: 'created', entity: 'model', entityId: model.id }),
+      );
+    });
   });
 
   describe('update', () => {
@@ -114,6 +135,20 @@ describe('ModelsService', () => {
         updatedBy: 'aivacol',
       });
       expect(result).toEqual(updated);
+    });
+
+    it('emits a fleet.audit event after updating a model', async () => {
+      const model = makeModel();
+      const updated = makeModel({ updatedBy: 'aivacol' });
+      repo.findOneBy.mockResolvedValueOnce(model).mockResolvedValueOnce(updated);
+      repo.update.mockResolvedValue({ affected: 1, raw: [], generatedMaps: [] });
+
+      await service.update('1', { name: 'Corolla Updated' }, 'aivacol');
+
+      expect(rabbitClient.emit).toHaveBeenCalledWith(
+        'fleet.audit',
+        expect.objectContaining({ action: 'updated', entity: 'model', entityId: 1 }),
+      );
     });
 
     it('throws NotFoundException when model does not exist', async () => {
@@ -138,6 +173,19 @@ describe('ModelsService', () => {
         updatedBy: 'aivacol',
       });
       expect(result).toEqual({ status: 'ok', message: 'model id: 1 has been deleted' });
+    });
+
+    it('emits a fleet.audit event after removing a model', async () => {
+      const model = makeModel();
+      repo.findOneBy.mockResolvedValue(model);
+      repo.update.mockResolvedValue({ affected: 1, raw: [], generatedMaps: [] });
+
+      await service.remove('1', 'aivacol');
+
+      expect(rabbitClient.emit).toHaveBeenCalledWith(
+        'fleet.audit',
+        expect.objectContaining({ action: 'deleted', entity: 'model', entityId: 1 }),
+      );
     });
 
     it('throws NotFoundException when model does not exist', async () => {

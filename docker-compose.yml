@@ -1,16 +1,36 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: fleet_postgres
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: fleet_sqlserver
     restart: unless-stopped
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 8075d6a49a36eeb00822fc4672e43df74ce64c0b
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Aivacol@2026"
+      MSSQL_PID: Developer
     ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - "1433:1433"
 
-volumes:
-  postgres_data:
+  redis:
+    image: redis:7-alpine
+    container_name: fleet_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: fleet_rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  mongodb:
+    image: mongo:7
+    container_name: fleet_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"

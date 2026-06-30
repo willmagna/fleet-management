@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Vehicle } from './vehicle.entity';
+import { VehicleStatusHistory } from './vehicle-status-history.entity';
 import { VehiclesController } from './vehicles.controller';
 import { VehiclesService } from './vehicles.service';
 
@@ -11,6 +12,7 @@ const makeVehicle = (overrides: Partial<Vehicle> = {}): Vehicle =>
     renavam: '12345678901',
     year: 2022,
     modelId: 1,
+    status: 'disponivel',
     active: true,
     createdBy: 'aivacol',
     updatedBy: null,
@@ -29,8 +31,10 @@ describe('VehiclesController', () => {
     const mockService: Partial<jest.Mocked<VehiclesService>> = {
       findAll: jest.fn(),
       findOne: jest.fn(),
+      getStatusHistory: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      changeStatus: jest.fn(),
       remove: jest.fn(),
     };
 
@@ -63,6 +67,18 @@ describe('VehiclesController', () => {
     expect(result).toEqual(vehicle);
   });
 
+  it('getStatusHistory delegates to VehiclesService.getStatusHistory', async () => {
+    const history: VehicleStatusHistory[] = [
+      { id: 1, vehicleId: 1, fromStatus: null, toStatus: 'disponivel', changedBy: 'aivacol', changedAt: new Date(), notes: null },
+    ];
+    service.getStatusHistory.mockResolvedValue(history);
+
+    const result = await controller.getStatusHistory('1');
+
+    expect(service.getStatusHistory).toHaveBeenCalledWith('1');
+    expect(result).toEqual(history);
+  });
+
   it('create passes body and authenticated user nickname to VehiclesService.create', async () => {
     const body = { licensePlate: 'XYZ-9999', modelId: 2, year: 2023 } as Partial<Vehicle>;
     const vehicle = makeVehicle({ ...body, createdBy: 'aivacol' });
@@ -82,6 +98,17 @@ describe('VehiclesController', () => {
     const result = await controller.update('1', body, req);
 
     expect(service.update).toHaveBeenCalledWith('1', body, 'aivacol');
+    expect(result).toEqual(updated);
+  });
+
+  it('changeStatus passes id, status, notes, and nickname to VehiclesService.changeStatus', async () => {
+    const body = { status: 'alugado' as const, notes: 'Contrato 001' };
+    const updated = makeVehicle({ status: 'alugado', updatedBy: 'aivacol' });
+    service.changeStatus.mockResolvedValue(updated);
+
+    const result = await controller.changeStatus('1', body, req);
+
+    expect(service.changeStatus).toHaveBeenCalledWith('1', 'alugado', 'aivacol', 'Contrato 001');
     expect(result).toEqual(updated);
   });
 

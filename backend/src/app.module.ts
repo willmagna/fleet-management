@@ -10,6 +10,8 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { BrandsModule } from './brands/brands.module';
 import { ModelsModule } from './models/models.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
+import { MessagingModule } from './messaging/messaging.module';
+import { AuditModule } from './audit/audit.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { VehiclesModule } from './vehicles/vehicles.module';
     BrandsModule,
     ModelsModule,
     VehiclesModule,
+    MessagingModule,
+    AuditModule,
   ],
   controllers: [AppController],
   providers: [
