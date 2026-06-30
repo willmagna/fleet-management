@@ -1,28 +1,47 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { Repository } from 'typeorm';
 import { Vehicle } from './vehicle.entity';
+
+const CACHE_KEY_ALL = 'vehicles:all';
+const cacheKeyOne = (id: string) => `vehicles:${id}`;
 
 @Injectable()
 export class VehiclesService {
   constructor(
     @Inject('VEHICLE_REPOSITORY')
     private readonly vehicleRepository: Repository<Vehicle>,
+    @Inject(CACHE_MANAGER)
+    private readonly cache: Cache,
   ) {}
 
-  findAll(): Promise<Vehicle[]> {
-    return this.vehicleRepository.find({ where: { active: true } });
+  async findAll(): Promise<Vehicle[]> {
+    const cached = await this.cache.get<Vehicle[]>(CACHE_KEY_ALL);
+    if (cached) return cached;
+
+    const vehicles = await this.vehicleRepository.find({
+      where: { active: true },
+    });
+    await this.cache.set(CACHE_KEY_ALL, vehicles);
+    return vehicles;
   }
 
   async findOne(id: string): Promise<Vehicle> {
+    const cached = await this.cache.get<Vehicle>(cacheKeyOne(id));
+    if (cached) return cached;
+
     const vehicle = await this.vehicleRepository.findOneBy({
       id: Number(id),
       active: true,
     });
     if (!vehicle) throw new NotFoundException(`Vehicle ${id} not found`);
+
+    await this.cache.set(cacheKeyOne(id), vehicle);
     return vehicle;
   }
 
-  create(payload: Partial<Vehicle>): Promise<Vehicle> {
+  async create(payload: Partial<Vehicle>): Promise<Vehicle> {
     const data = {
       ...payload,
       createdAt: new Date(),
@@ -30,7 +49,9 @@ export class VehiclesService {
       createdBy: 'aivacol',
     };
     const vehicle = this.vehicleRepository.create(data);
-    return this.vehicleRepository.save(vehicle);
+    const saved = await this.vehicleRepository.save(vehicle);
+    await this.cache.del(CACHE_KEY_ALL);
+    return saved;
   }
 
   async update(id: string, payload: Partial<Vehicle>): Promise<Vehicle> {
@@ -42,6 +63,8 @@ export class VehiclesService {
     const vehicle = await this.findOne(id);
     if (!vehicle) throw new NotFoundException(`Vehicle ${id} not found`);
     await this.vehicleRepository.update(id, data);
+    await this.cache.del(CACHE_KEY_ALL);
+    await this.cache.del(cacheKeyOne(id));
     return this.findOne(id);
   }
 
@@ -51,6 +74,8 @@ export class VehiclesService {
       active: false,
       updatedBy: 'aivacol',
     });
+    await this.cache.del(CACHE_KEY_ALL);
+    await this.cache.del(cacheKeyOne(id));
     return {
       status: 'ok',
       message: `vehicle id: ${id} has been deleted`,
