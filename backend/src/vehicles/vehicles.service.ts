@@ -41,44 +41,39 @@ export class VehiclesService {
     return vehicle;
   }
 
-  async create(payload: Partial<Vehicle>): Promise<Vehicle> {
-    const data = {
+  async create(payload: Partial<Vehicle>, nickname: string): Promise<Vehicle> {
+    const vehicle = this.vehicleRepository.create({
       ...payload,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      createdBy: 'aivacol',
-    };
-    const vehicle = this.vehicleRepository.create(data);
+      createdBy: nickname,
+    });
     const saved = await this.vehicleRepository.save(vehicle);
     await this.cache.del(CACHE_KEY_ALL);
     return saved;
   }
 
-  async update(id: string, payload: Partial<Vehicle>): Promise<Vehicle> {
-    const data = {
+  async update(
+    id: string,
+    payload: Partial<Vehicle>,
+    nickname: string,
+  ): Promise<Vehicle> {
+    await this.findOne(id);
+    await this.vehicleRepository.update(id, {
       ...payload,
-      updatedAt: new Date(),
-      updatedBy: 'aivacol',
-    };
-    const vehicle = await this.findOne(id);
-    if (!vehicle) throw new NotFoundException(`Vehicle ${id} not found`);
-    await this.vehicleRepository.update(id, data);
+      updatedBy: nickname,
+    });
     await this.cache.del(CACHE_KEY_ALL);
     await this.cache.del(cacheKeyOne(id));
     return this.findOne(id);
   }
 
-  async remove(id: string): Promise<object> {
+  async remove(id: string, nickname: string): Promise<object> {
     await this.findOne(id);
     await this.vehicleRepository.update(id, {
       active: false,
-      updatedBy: 'aivacol',
+      updatedBy: nickname,
     });
     await this.cache.del(CACHE_KEY_ALL);
     await this.cache.del(cacheKeyOne(id));
-    return {
-      status: 'ok',
-      message: `vehicle id: ${id} has been deleted`,
-    };
+    return { status: 'ok', message: `vehicle id: ${id} has been deleted` };
   }
 }

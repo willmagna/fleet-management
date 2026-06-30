@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Request,
 } from '@nestjs/common';
 import { VehiclesService } from './vehicles.service';
 import { Vehicle } from './vehicle.entity';
@@ -25,20 +26,27 @@ export class VehiclesController {
   }
 
   @Post()
-  create(@Body() body: Partial<Vehicle>): Promise<Vehicle> {
-    return this.vehiclesService.create(body);
+  create(
+    @Body() body: Partial<Vehicle>,
+    @Request() req: { user: { nickname: string } },
+  ): Promise<Vehicle> {
+    return this.vehiclesService.create(body, req.user.nickname);
   }
 
   @Put(':id')
   update(
     @Param('id') id: string,
     @Body() body: Partial<Vehicle>,
+    @Request() req: { user: { nickname: string } },
   ): Promise<Vehicle> {
-    return this.vehiclesService.update(id, body);
+    return this.vehiclesService.update(id, body, req.user.nickname);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<object> {
-    return this.vehiclesService.remove(id);
+  remove(
+    @Param('id') id: string,
+    @Request() req: { user: { nickname: string } },
+  ): Promise<object> {
+    return this.vehiclesService.remove(id, req.user.nickname);
   }
 }

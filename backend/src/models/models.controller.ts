@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Request,
 } from '@nestjs/common';
 import { ModelsService } from './models.service';
 import { Model } from './model.entity';
@@ -25,20 +26,27 @@ export class ModelsController {
   }
 
   @Post()
-  create(@Body() body: Partial<Model>): Promise<Model> {
-    return this.modelsService.create(body);
+  create(
+    @Body() body: Partial<Model>,
+    @Request() req: { user: { nickname: string } },
+  ): Promise<Model> {
+    return this.modelsService.create(body, req.user.nickname);
   }
 
   @Put(':id')
   update(
     @Param('id') id: string,
     @Body() body: Partial<Model>,
+    @Request() req: { user: { nickname: string } },
   ): Promise<Model> {
-    return this.modelsService.update(id, body);
+    return this.modelsService.update(id, body, req.user.nickname);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<object> {
-    return this.modelsService.remove(id);
+  remove(
+    @Param('id') id: string,
+    @Request() req: { user: { nickname: string } },
+  ): Promise<object> {
+    return this.modelsService.remove(id, req.user.nickname);
   }
 }

@@ -22,39 +22,33 @@ export class ModelsService {
     return model;
   }
 
-  create(payload: Partial<Model>): Promise<Model> {
-    const data = {
+  create(payload: Partial<Model>, nickname: string): Promise<Model> {
+    const model = this.modelRepository.create({
       ...payload,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      createdBy: 'aivacol',
-    };
-    console.log(data);
-    const model = this.modelRepository.create(data);
+      createdBy: nickname,
+    });
     return this.modelRepository.save(model);
   }
 
-  async update(id: string, payload: Partial<Model>): Promise<Model> {
-    const data = {
+  async update(
+    id: string,
+    payload: Partial<Model>,
+    nickname: string,
+  ): Promise<Model> {
+    await this.findOne(id);
+    await this.modelRepository.update(id, {
       ...payload,
-      updatedAt: new Date(),
-      updatedBy: 'aivacol',
-    };
-    const model = await this.findOne(id);
-    if (!model) throw new NotFoundException(`Model ${id} not found`);
-    await this.modelRepository.update(id, data);
+      updatedBy: nickname,
+    });
     return this.findOne(id);
   }
 
-  async remove(id: string): Promise<object> {
+  async remove(id: string, nickname: string): Promise<object> {
     await this.findOne(id);
     await this.modelRepository.update(id, {
       active: false,
-      updatedBy: 'aivacol',
+      updatedBy: nickname,
     });
-    return {
-      status: 'ok',
-      message: `model id: ${id} has been deleted`,
-    };
+    return { status: 'ok', message: `model id: ${id} has been deleted` };
   }
 }

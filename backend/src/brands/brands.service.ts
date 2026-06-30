@@ -18,44 +18,37 @@ export class BrandsService {
       id: Number(id),
       active: true,
     });
-    console.log(brand);
     if (!brand) throw new NotFoundException(`Brand ${id} not found`);
     return brand;
   }
 
-  create(payload: Partial<Brand>): Promise<Brand> {
-    const data = {
+  create(payload: Partial<Brand>, nickname: string): Promise<Brand> {
+    const brand = this.brandRepository.create({
       ...payload,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      createdBy: 'aivacol',
-    };
-    const brand = this.brandRepository.create(data);
+      createdBy: nickname,
+    });
     return this.brandRepository.save(brand);
   }
 
-  async update(id: string, payload: Partial<Brand>): Promise<Brand> {
-    const data = {
+  async update(
+    id: string,
+    payload: Partial<Brand>,
+    nickname: string,
+  ): Promise<Brand> {
+    await this.findOne(id);
+    await this.brandRepository.update(id, {
       ...payload,
-      updatedAt: new Date(),
-      updatedBy: 'aivacol',
-    };
-    const brand = await this.findOne(id);
-    if (!brand) throw new NotFoundException(`Brand ${id} not found`);
-    await this.brandRepository.update(id, data);
+      updatedBy: nickname,
+    });
     return this.findOne(id);
   }
 
-  async remove(id: string): Promise<object> {
+  async remove(id: string, nickname: string): Promise<object> {
     await this.findOne(id);
-    const data = {
+    await this.brandRepository.update(id, {
       active: false,
-      updatedBy: 'aivacol',
-    };
-    await this.brandRepository.update(id, data);
-    return {
-      status: 'ok',
-      message: `brand id: ${id} has been deleted`,
-    };
+      updatedBy: nickname,
+    });
+    return { status: 'ok', message: `brand id: ${id} has been deleted` };
   }
 }
