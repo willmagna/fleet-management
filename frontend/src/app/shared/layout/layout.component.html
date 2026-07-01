@@ -3,9 +3,18 @@
   <span class="brand-name">Aivacol Fleet</span>
 
   <nav class="nav-links">
-    <a mat-button routerLink="/vehicles" routerLinkActive="active-link">
+    <a
+      mat-button
+      routerLink="/vehicles"
+      routerLinkActive="active-link"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
       <mat-icon>list</mat-icon>
       Veículos
+    </a>
+    <a mat-button routerLink="/vehicles/kanban" routerLinkActive="active-link">
+      <mat-icon>view_kanban</mat-icon>
+      Kanban
     </a>
   </nav>
 

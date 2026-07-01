@@ -22,6 +22,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'vehicles/kanban',
+        loadComponent: () =>
+          import('./features/vehicles/vehicle-kanban/vehicle-kanban.component').then(
+            (m) => m.VehicleKanbanComponent,
+          ),
+      },
+      {
         path: 'vehicles/new',
         loadComponent: () =>
           import('./features/vehicles/vehicle-form/vehicle-form.component').then(

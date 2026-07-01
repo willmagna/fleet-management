@@ -3,7 +3,8 @@
     "_postman_id": "a1c4cce9-db7a-4a4d-a4ca-56d643bfa547",
     "name": "fleet-management",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "25603811"
+    "_exporter_id": "25603811",
+    "description": "Full API collection for the Aivacol Fleet Management backend (brands, models, vehicles, auth).\n\nSetup:\n1. Set the collection variable `baseURL` (e.g. `http://localhost:3000`).\n2. Run `auth > Login` with the seeded user (`aivacol` / `aivacol`) and copy `access_token`/`refresh_token` into the `token`/`refresh_token` variables.\n3. All other requests attach `{{token}}` as a Bearer token automatically.\n4. After creating a brand/model/vehicle, copy the returned `id` into `brand_id`/`model_id`/`vehicle_id` to use it in the following requests."
   },
   "item": [
     {
@@ -23,11 +24,16 @@
               ]
             },
             "method": "GET",
+            "description": "Lists all active brands (soft-deleted ones are excluded).\n\nHow to use: just send it — requires only a valid Bearer `{{token}}}`, no params or body.\n\nWhat to expect: `200 OK` with an array of brands (`id`, `name`, `active`, `createdAt`, `updatedAt`, `createdBy`, `updatedBy`). Result is served from the Redis cache (`brands:all`) when available.",
             "header": [],
             "url": {
               "raw": "{{baseURL}}/brands",
-              "host": ["{{baseURL}}"],
-              "path": ["brands"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "brands"
+              ]
             }
           },
           "response": []
@@ -46,11 +52,17 @@
               ]
             },
             "method": "GET",
+            "description": "Fetches a single brand by id.\n\nHow to use: replace the `1` in the URL with the id you want (or run `Create` first and use `{{brand_id}}`).\n\nWhat to expect: `200 OK` with the brand object, or `404 Not Found` if the id doesn't exist or was soft-deleted. Cached in Redis (`brands:{id}`).",
             "header": [],
             "url": {
               "raw": "{{baseURL}}/brands/1",
-              "host": ["{{baseURL}}"],
-              "path": ["brands", "1"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "brands",
+                "1"
+              ]
             }
           },
           "response": []
@@ -69,6 +81,7 @@
               ]
             },
             "method": "POST",
+            "description": "Creates a new brand.\n\nHow to use: send `{ \"name\": string }` in the body. `created_by` is filled automatically from the JWT (`req.user.nickname`) — no need to send it.\n\nWhat to expect: `201 Created` with the new brand, including its generated `id`. Copy that `id` into the collection variable `brand_id` so the `Update`/`Delete` requests below can use it. Invalidates the `brands:all` cache.",
             "header": [],
             "body": {
               "mode": "raw",
@@ -81,8 +94,12 @@
             },
             "url": {
               "raw": "{{baseURL}}/brands",
-              "host": ["{{baseURL}}"],
-              "path": ["brands"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "brands"
+              ]
             }
           },
           "response": []
@@ -101,6 +118,7 @@
               ]
             },
             "method": "PUT",
+            "description": "Updates an existing brand's name.\n\nHow to use: set the collection variable `brand_id` first (copy it from the `Create` response). Send `{ \"name\": string }` in the body.\n\nWhat to expect: `200 OK` with the updated brand, or `404 Not Found` if `brand_id` doesn't exist. `updated_by` is set from the JWT. Invalidates both `brands:all` and `brands:{id}` caches.",
             "header": [],
             "body": {
               "mode": "raw",
@@ -113,8 +131,13 @@
             },
             "url": {
               "raw": "{{baseURL}}/brands/{{brand_id}}",
-              "host": ["{{baseURL}}"],
-              "path": ["brands", "{{brand_id}}"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "brands",
+                "{{brand_id}}"
+              ]
             }
           },
           "response": []
@@ -133,11 +156,17 @@
               ]
             },
             "method": "DELETE",
+            "description": "Soft-deletes a brand — sets `active = false` and `updated_by`; the row is never physically removed.\n\nHow to use: make sure `brand_id` is set (see `Create`/`Update`).\n\nWhat to expect: `200 OK` on success, or `404 Not Found` if the id doesn't exist. The brand disappears from subsequent `Get`/`Get by Id` calls. Invalidates the brand caches.",
             "header": [],
             "url": {
               "raw": "{{baseURL}}/brands/{{brand_id}}",
-              "host": ["{{baseURL}}"],
-              "path": ["brands", "{{brand_id}}"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "brands",
+                "{{brand_id}}"
+              ]
             }
           },
           "response": []
@@ -161,11 +190,17 @@
               ]
             },
             "method": "GET",
+            "description": "Fetches a single vehicle by id, with its `model` (and the model's `brand`) eagerly loaded.\n\nHow to use: set the collection variable `vehicle_id` (see `Create`), it's used in the URL automatically.\n\nWhat to expect: `200 OK` with the vehicle plus nested `model`/`brand`, or `404 Not Found` if it doesn't exist or is inactive. Cached in Redis (`vehicles:{id}`).",
             "header": [],
             "url": {
               "raw": "{{baseURL}}/vehicles/{{vehicle_id}}",
-              "host": ["{{baseURL}}"],
-              "path": ["vehicles", "{{vehicle_id}}"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "vehicles",
+                "{{vehicle_id}}"
+              ]
             }
           },
           "response": []
@@ -184,6 +219,7 @@
               ]
             },
             "method": "POST",
+            "description": "Registers a new vehicle.\n\nHow to use: send `modelId`, `licensePlate`, `chassis`, `renavam` and `year` in the body — all required, and `licensePlate`/`chassis`/`renavam` must be unique.\n\nWhat to expect: `201 Created` with the new vehicle, `status` defaulted to `disponivel`, and an initial row written to the status-history log. An audit event (`fleet.audit`) is emitted. Copy the returned `id` into the collection variable `vehicle_id` for the requests below.",
             "header": [],
             "body": {
               "mode": "raw",
@@ -196,8 +232,12 @@
             },
             "url": {
               "raw": "{{baseURL}}/vehicles",
-              "host": ["{{baseURL}}"],
-              "path": ["vehicles"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "vehicles"
+              ]
             }
           },
           "response": []
@@ -216,6 +256,7 @@
               ]
             },
             "method": "PUT",
+            "description": "Updates a vehicle's data (plate, chassis, renavam, year, model). Does **not** change `status` — use `Update Status` below for that.\n\nHow to use: set `vehicle_id` first, then send only the fields you want to change in the body.\n\nWhat to expect: `200 OK` with the updated vehicle, or `404 Not Found` if `vehicle_id` doesn't exist. `updated_by` is set from the JWT.",
             "header": [],
             "body": {
               "mode": "raw",
@@ -228,8 +269,13 @@
             },
             "url": {
               "raw": "{{baseURL}}/vehicles/{{vehicle_id}}",
-              "host": ["{{baseURL}}"],
-              "path": ["vehicles", "{{vehicle_id}}"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "vehicles",
+                "{{vehicle_id}}"
+              ]
             }
           },
           "response": []
@@ -248,11 +294,17 @@
               ]
             },
             "method": "DELETE",
+            "description": "Soft-deletes a vehicle: sets `active = false`, forces `status = 'inativo'`, and writes a row to the status-history log.\n\nHow to use: make sure `vehicle_id` is set.\n\nWhat to expect: `200 OK` on success, or `404 Not Found` if the id doesn't exist. The vehicle disappears from subsequent list/detail calls but its history is preserved.",
             "header": [],
             "url": {
               "raw": "{{baseURL}}/vehicles/{{vehicle_id}}",
-              "host": ["{{baseURL}}"],
-              "path": ["vehicles", "{{vehicle_id}}"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "vehicles",
+                "{{vehicle_id}}"
+              ]
             }
           },
           "response": []
@@ -271,11 +323,18 @@
               ]
             },
             "method": "GET",
+            "description": "Returns the full status-transition history of a vehicle.\n\nHow to use: set `vehicle_id`; no body needed.\n\nWhat to expect: `200 OK` with an array ordered by `changed_at DESC`, each entry containing `from_status`, `to_status`, `changed_by`, `changed_at` and an optional `notes`.",
             "header": [],
             "url": {
               "raw": "{{baseURL}}/vehicles/{{vehicle_id}}/status-history",
-              "host": ["{{baseURL}}"],
-              "path": ["vehicles", "{{vehicle_id}}", "status-history"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "vehicles",
+                "{{vehicle_id}}",
+                "status-history"
+              ]
             }
           },
           "response": []
@@ -294,11 +353,16 @@
               ]
             },
             "method": "GET",
+            "description": "Lists all active vehicles.\n\nHow to use: just send it — requires only a valid Bearer token.\n\nWhat to expect: `200 OK` with an array of vehicles, each including its nested `model`/`brand`. Served from the Redis cache (`vehicles:all`) when available.",
             "header": [],
             "url": {
               "raw": "{{baseURL}}/vehicles",
-              "host": ["{{baseURL}}"],
-              "path": ["vehicles"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "vehicles"
+              ]
             }
           },
           "response": []
@@ -317,6 +381,7 @@
               ]
             },
             "method": "PATCH",
+            "description": "Transitions a vehicle to a new operational status.\n\nHow to use: set `vehicle_id`; send `{ \"status\": \"disponivel\" | \"alugado\" | \"manutencao\" | \"inativo\", \"notes\"?: string }` in the body. `notes` is optional (max 500 chars).\n\nWhat to expect: `200 OK` with the updated vehicle, plus a new row written to the status-history log and a `fleet.audit` event emitted. Returns `400 Bad Request` if the requested status is the same as the current one.",
             "header": [],
             "body": {
               "mode": "raw",
@@ -329,8 +394,14 @@
             },
             "url": {
               "raw": "{{baseURL}}/vehicles/{{vehicle_id}}/status",
-              "host": ["{{baseURL}}"],
-              "path": ["vehicles", "{{vehicle_id}}", "status"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "vehicles",
+                "{{vehicle_id}}",
+                "status"
+              ]
             }
           },
           "response": []
@@ -354,11 +425,16 @@
               ]
             },
             "method": "GET",
+            "description": "Lists all active models, each with its `brand` eagerly loaded.\n\nHow to use: just send it — requires only a valid Bearer token.\n\nWhat to expect: `200 OK` with an array of models. Served from the Redis cache (`models:all`) when available.",
             "header": [],
             "url": {
               "raw": "{{baseURL}}/models",
-              "host": ["{{baseURL}}"],
-              "path": ["models"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "models"
+              ]
             }
           },
           "response": []
@@ -377,11 +453,17 @@
               ]
             },
             "method": "GET",
+            "description": "Fetches a single model by id.\n\nHow to use: set the collection variable `model_id` (see `Create`).\n\nWhat to expect: `200 OK` with the model (including nested `brand`), or `404 Not Found` if it doesn't exist or is inactive. Cached in Redis (`models:{id}`).",
             "header": [],
             "url": {
               "raw": "{{baseURL}}/models/{{model_id}}",
-              "host": ["{{baseURL}}"],
-              "path": ["models", "{{model_id}}"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "models",
+                "{{model_id}}"
+              ]
             }
           },
           "response": []
@@ -400,6 +482,7 @@
               ]
             },
             "method": "POST",
+            "description": "Creates a new model linked to a brand.\n\nHow to use: send `{ \"brandId\": number, \"name\": string }` in the body — `brandId` must reference an existing brand (see `brands → Create`).\n\nWhat to expect: `201 Created` with the new model, including its `id`. Copy it into the collection variable `model_id` for the requests below. Invalidates the `models:all` cache.",
             "header": [],
             "body": {
               "mode": "raw",
@@ -412,8 +495,12 @@
             },
             "url": {
               "raw": "{{baseURL}}/models",
-              "host": ["{{baseURL}}"],
-              "path": ["models"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "models"
+              ]
             }
           },
           "response": []
@@ -432,6 +519,7 @@
               ]
             },
             "method": "PUT",
+            "description": "Updates an existing model's name.\n\nHow to use: set `model_id` first, then send `{ \"name\": string }` in the body.\n\nWhat to expect: `200 OK` with the updated model, or `404 Not Found` if `model_id` doesn't exist. Invalidates both `models:all` and `models:{id}` caches.",
             "header": [],
             "body": {
               "mode": "raw",
@@ -444,8 +532,13 @@
             },
             "url": {
               "raw": "{{baseURL}}/models/{{model_id}}",
-              "host": ["{{baseURL}}"],
-              "path": ["models", "{{model_id}}"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "models",
+                "{{model_id}}"
+              ]
             }
           },
           "response": []
@@ -464,11 +557,17 @@
               ]
             },
             "method": "DELETE",
+            "description": "Soft-deletes a model — sets `active = false` and `updated_by`; never physically removed.\n\nHow to use: make sure `model_id` is set.\n\nWhat to expect: `200 OK` on success, or `404 Not Found` if the id doesn't exist. Invalidates the model caches.",
             "header": [],
             "url": {
               "raw": "{{baseURL}}/models/{{model_id}}",
-              "host": ["{{baseURL}}"],
-              "path": ["models", "{{model_id}}"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "models",
+                "{{model_id}}"
+              ]
             }
           },
           "response": []
@@ -485,6 +584,7 @@
               "type": "noauth"
             },
             "method": "POST",
+            "description": "Authenticates a user and issues tokens.\n\nHow to use: send `{ \"login\": string, \"password\": string }` — `login` accepts either the nickname or the email (seeded user: `aivacol` / `aivacol`).\n\nWhat to expect: `200 OK` with `access_token` (valid 15 min) and `refresh_token` (valid 7 days). Copy `access_token` into the collection variable `token` and `refresh_token` into `refresh_token` — every other request in this collection depends on `token` being set.",
             "header": [],
             "body": {
               "mode": "raw",
@@ -497,8 +597,13 @@
             },
             "url": {
               "raw": "{{baseURL}}/auth/login",
-              "host": ["{{baseURL}}"],
-              "path": ["auth", "login"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             }
           },
           "response": []
@@ -510,6 +615,7 @@
               "type": "noauth"
             },
             "method": "POST",
+            "description": "Starts the password-reset flow for a given email.\n\nHow to use: send `{ \"email\": string }`.\n\nWhat to expect: `200 OK` regardless of whether the email exists (avoids user enumeration). If it exists, a reset token (UUID, 1h TTL) is generated and logged to the **backend console** (no real email is sent) — copy it from there to use in `Reset Password`.",
             "header": [],
             "body": {
               "mode": "raw",
@@ -522,8 +628,13 @@
             },
             "url": {
               "raw": "{{baseURL}}/auth/forgot-password",
-              "host": ["{{baseURL}}"],
-              "path": ["auth", "forgot-password"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
             }
           },
           "response": []
@@ -535,6 +646,7 @@
               "type": "noauth"
             },
             "method": "POST",
+            "description": "Completes the password-reset flow.\n\nHow to use: send `{ \"token\": string, \"password\": string }` — `token` is the UUID printed to the backend console by `Forgot Password`, `password` must be at least 6 characters.\n\nWhat to expect: `200 OK` on success (password hash updated). `400`/`401` if the token is invalid, already used, or expired.",
             "header": [],
             "body": {
               "mode": "raw",
@@ -547,8 +659,13 @@
             },
             "url": {
               "raw": "{{baseURL}}/auth/reset-password",
-              "host": ["{{baseURL}}"],
-              "path": ["auth", "reset-password"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
             }
           },
           "response": []
@@ -560,6 +677,7 @@
               "type": "noauth"
             },
             "method": "POST",
+            "description": "Exchanges a refresh token for a new access token, without requiring the user to log in again.\n\nHow to use: send `{ \"refresh_token\": \"{{refresh_token}}\" }` — requires the variable to have been set by a previous `Login`.\n\nWhat to expect: `200 OK` with a new `access_token`. `401 Unauthorized` if the refresh token is invalid, expired, or was revoked (e.g. after `Logout`).",
             "header": [],
             "body": {
               "mode": "raw",
@@ -572,8 +690,13 @@
             },
             "url": {
               "raw": "{{baseURL}}/auth/refresh",
-              "host": ["{{baseURL}}"],
-              "path": ["auth", "refresh"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
             }
           },
           "response": []
@@ -592,6 +715,7 @@
               ]
             },
             "method": "POST",
+            "description": "Revokes the current refresh token, ending the session server-side.\n\nHow to use: requires a valid Bearer `{{token}}`; send `{ \"userId\": string }` matching the logged-in user.\n\nWhat to expect: `200 OK` on success. After this, the previously issued `refresh_token` will be rejected by `Refresh Token`.",
             "header": [],
             "body": {
               "mode": "raw",
@@ -604,8 +728,13 @@
             },
             "url": {
               "raw": "{{baseURL}}/auth/logout",
-              "host": ["{{baseURL}}"],
-              "path": ["auth", "logout"]
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
             }
           },
           "response": []
@@ -620,7 +749,9 @@
         "type": "text/javascript",
         "packages": {},
         "requests": {},
-        "exec": [""]
+        "exec": [
+          ""
+        ]
       }
     },
     {
@@ -629,7 +760,9 @@
         "type": "text/javascript",
         "packages": {},
         "requests": {},
-        "exec": [""]
+        "exec": [
+          ""
+        ]
       }
     }
   ],
