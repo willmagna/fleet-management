@@ -45,6 +45,9 @@ export class Vehicle {
   @Column({ name: 'updated_by', type: 'varchar', nullable: true })
   updatedBy!: string | null;
 
+  @Column({ type: 'nvarchar', default: 'disponivel' })
+  status!: string;
+
   @Column({ default: true })
   active!: boolean;
 }

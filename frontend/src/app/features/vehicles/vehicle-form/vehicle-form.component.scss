@@ -1,0 +1,108 @@
+.page-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 24px;
+
+  .page-title {
+    margin: 0 0 4px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #384850;
+  }
+
+  .page-subtitle {
+    margin: 0;
+    color: #666;
+    font-size: 0.875rem;
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+.form-card {
+  padding: 8px;
+}
+
+.vehicle-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #666;
+  margin: 16px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+
+  .flex-1 { flex: 1; }
+  .flex-2 { flex: 2; }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 600px) {
+  .page-container {
+    padding: 16px 12px;
+  }
+
+  .page-header {
+    .page-title {
+      font-size: 1.25rem;
+    }
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+
+    .flex-1,
+    .flex-2 {
+      flex: unset;
+      width: 100%;
+    }
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+
+    button {
+      width: 100%;
+      justify-content: center;
+      min-width: unset;
+    }
+  }
+}

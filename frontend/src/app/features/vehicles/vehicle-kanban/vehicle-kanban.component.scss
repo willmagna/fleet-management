@@ -1,0 +1,211 @@
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  gap: 16px;
+
+  .page-title {
+    margin: 0 0 4px;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #384850;
+  }
+
+  .page-subtitle {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+.kanban-board {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.kanban-column {
+  flex: 1 0 260px;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  background: #eef2f3;
+  border-radius: 8px;
+  min-height: 200px;
+}
+
+.column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 8px 8px 0 0;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fff;
+
+  .column-count {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-size: 0.8rem;
+  }
+
+  &.status-disponivel {
+    background: #2e7d32;
+  }
+
+  &.status-alugado {
+    background: #1565c0;
+  }
+
+  &.status-manutencao {
+    background: #e65100;
+  }
+
+  &.status-inativo {
+    background: #757575;
+  }
+}
+
+.column-body {
+  flex: 1;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 120px;
+}
+
+.column-empty {
+  margin: 16px 0;
+  text-align: center;
+  color: #999;
+  font-size: 0.85rem;
+}
+
+.vehicle-card {
+  padding: 10px 12px;
+  cursor: grab;
+  background: #fff;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-edit {
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+
+  ::ng-deep .mat-mdc-button-touch-target {
+    width: 32px;
+    height: 32px;
+  }
+
+  mat-icon {
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+  }
+}
+
+.plate-badge {
+  font-family: monospace;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: #e8eaf6;
+  color: #303f9f;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.card-model {
+  margin: 8px 0 2px;
+  font-size: 0.85rem;
+  color: #384850;
+}
+
+.card-year {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.card-preview {
+  padding: 8px 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+// Elements below are created/managed by the CDK drag-drop directives outside
+// this component's own template nodes, so emulated view encapsulation doesn't
+// scope them — ::ng-deep is required to style the drag ghost and placeholder.
+::ng-deep {
+  .cdk-drag-preview {
+    border-radius: 4px;
+  }
+
+  .cdk-drag-placeholder {
+    opacity: 0.3;
+  }
+
+  .cdk-drop-list-dragging .vehicle-card:not(.cdk-drag-placeholder) {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@media (max-width: 600px) {
+  .page-container {
+    padding: 16px 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+
+    .page-title {
+      font-size: 1.4rem;
+    }
+
+    a {
+      justify-content: center;
+      margin-top: 0;
+    }
+  }
+
+  .kanban-column {
+    flex-basis: 220px;
+  }
+}

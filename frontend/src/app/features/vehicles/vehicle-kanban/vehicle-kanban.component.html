@@ -1,0 +1,60 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Kanban de Veículos</h1>
+      <p class="page-subtitle">Arraste os cartões entre as colunas para atualizar o status</p>
+    </div>
+    <a mat-flat-button color="primary" routerLink="/vehicles/new">
+      <mat-icon>add</mat-icon>
+      Novo Veículo
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else {
+    <div class="kanban-board" cdkDropListGroup>
+      @for (column of columns; track column.status) {
+        <div class="kanban-column">
+          <div class="column-header" [class]="getStatusClass(column.status)">
+            <span>{{ column.label }}</span>
+            <span class="column-count">{{ board()[column.status].length }}</span>
+          </div>
+
+          <div
+            class="column-body"
+            cdkDropList
+            [cdkDropListData]="board()[column.status]"
+            (cdkDropListDropped)="drop($event, column.status)"
+          >
+            @for (vehicle of board()[column.status]; track vehicle.id) {
+              <mat-card class="vehicle-card" appearance="outlined" cdkDrag>
+                <div class="card-top">
+                  <span class="plate-badge">{{ vehicle.licensePlate }}</span>
+                  <button
+                    mat-icon-button
+                    class="card-edit"
+                    (click)="editVehicle(vehicle.id)"
+                    matTooltip="Editar"
+                  >
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                </div>
+                <p class="card-model">{{ vehicle.model.brand.name }} · {{ vehicle.model.name }}</p>
+                <p class="card-year">Ano {{ vehicle.year }}</p>
+
+                <mat-card class="card-preview" *cdkDragPreview appearance="outlined">
+                  <span class="plate-badge">{{ vehicle.licensePlate }}</span>
+                </mat-card>
+              </mat-card>
+            } @empty {
+              <p class="column-empty">Nenhum veículo</p>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,147 @@
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  gap: 16px;
+
+  .page-title {
+    margin: 0 0 4px;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #384850;
+  }
+
+  .page-subtitle {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 32px;
+  gap: 16px;
+  text-align: center;
+
+  .empty-icon {
+    font-size: 64px;
+    height: 64px;
+    width: 64px;
+    color: #bbb;
+  }
+
+  p {
+    margin: 0;
+    color: #666;
+    font-size: 1rem;
+  }
+}
+
+.table-card {
+  overflow: hidden;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.vehicles-table {
+  width: 100%;
+  min-width: 600px;
+}
+
+.plate-badge {
+  font-family: monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: #e8eaf6;
+  color: #303f9f;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.status-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &.status-disponivel {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  &.status-alugado {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+
+  &.status-manutencao {
+    background: #fff3e0;
+    color: #e65100;
+  }
+
+  &.status-inativo {
+    background: #f5f5f5;
+    color: #757575;
+  }
+}
+
+.actions-header,
+.actions-cell {
+  text-align: right;
+  width: 140px;
+}
+
+.vehicle-row:hover {
+  background: #fafafa;
+}
+
+@media (max-width: 600px) {
+  .page-container {
+    padding: 16px 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+
+    .page-title {
+      font-size: 1.4rem;
+    }
+
+    a {
+      justify-content: center;
+      margin-top: 0;
+    }
+  }
+}
