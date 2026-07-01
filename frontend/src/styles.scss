@@ -1,1 +1,39 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme((
+    color: (
+      theme-type: light,
+      primary: mat.$orange-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+
+  // Brand override: pin the M3 primary system tokens to the exact Aivacol orange
+  // rather than the closest swatch from the generated $orange-palette.
+  --mat-sys-primary: #ef6e00;
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-primary-container: #ffe0b8;
+  --mat-sys-on-primary-container: #5a2900;
+  --mat-sys-on-surface: #384850;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  background: #f1f7f9;
+  color: #384850;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+}

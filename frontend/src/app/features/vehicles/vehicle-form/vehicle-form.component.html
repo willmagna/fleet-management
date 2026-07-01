@@ -1,0 +1,119 @@
+<div class="page-container">
+  <div class="page-header">
+    <button mat-icon-button routerLink="/vehicles">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div>
+      <h1 class="page-title">{{ isEdit() ? 'Editar Veículo' : 'Novo Veículo' }}</h1>
+      <p class="page-subtitle">{{ isEdit() ? 'Atualize os dados do veículo' : 'Preencha os dados para cadastrar' }}</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else {
+    <mat-card appearance="outlined" class="form-card">
+      <mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="submit()" class="vehicle-form">
+
+          <h3 class="section-title">Classificação</h3>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Marca</mat-label>
+              <mat-select formControlName="brandId">
+                @for (brand of brands(); track brand.id) {
+                  <mat-option [value]="brand.id">{{ brand.name }}</mat-option>
+                }
+              </mat-select>
+              @if (form.controls.brandId.hasError('required')) {
+                <mat-error>Selecione uma marca</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Modelo</mat-label>
+              <mat-select formControlName="modelId" [disabled]="selectedBrandId() === 0">
+                @for (model of filteredModels(); track model.id) {
+                  <mat-option [value]="model.id">{{ model.name }}</mat-option>
+                }
+                @if (filteredModels().length === 0) {
+                  <mat-option disabled>Selecione uma marca primeiro</mat-option>
+                }
+              </mat-select>
+              @if (form.controls.modelId.hasError('required')) {
+                <mat-error>Selecione um modelo</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <h3 class="section-title">Identificação</h3>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="flex-2">
+              <mat-label>Placa</mat-label>
+              <input matInput formControlName="licensePlate" placeholder="ABC-1234 ou ABC1D23" />
+              <mat-hint>Formato antigo (ABC-1234) ou Mercosul (ABC1D23)</mat-hint>
+              @if (form.controls.licensePlate.hasError('required')) {
+                <mat-error>Campo obrigatório</mat-error>
+              }
+              @if (form.controls.licensePlate.hasError('pattern')) {
+                <mat-error>Placa inválida — use ABC-1234 ou ABC1D23</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Ano</mat-label>
+              <input matInput type="number" formControlName="year" />
+              @if (form.controls.year.hasError('required')) {
+                <mat-error>Campo obrigatório</mat-error>
+              }
+              @if (form.controls.year.hasError('min') || form.controls.year.hasError('max')) {
+                <mat-error>Ano inválido</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Chassi</mat-label>
+              <input matInput formControlName="chassis" />
+              @if (form.controls.chassis.hasError('required')) {
+                <mat-error>Campo obrigatório</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Renavam</mat-label>
+              <input matInput formControlName="renavam" />
+              @if (form.controls.renavam.hasError('required')) {
+                <mat-error>Campo obrigatório</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="form-actions">
+            <button mat-stroked-button type="button" routerLink="/vehicles" [disabled]="saving()">
+              Cancelar
+            </button>
+            <button
+              mat-flat-button
+              color="primary"
+              type="submit"
+              [disabled]="form.invalid || saving()"
+            >
+              @if (saving()) {
+                <mat-spinner diameter="18" />
+              } @else {
+                <ng-container>
+                  <mat-icon>save</mat-icon>
+                  {{ isEdit() ? 'Atualizar' : 'Cadastrar' }}
+                </ng-container>
+              }
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

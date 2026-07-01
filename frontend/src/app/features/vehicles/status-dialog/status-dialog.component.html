@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>Alterar Status</h2>
+
+<mat-dialog-content>
+  <p class="vehicle-info">
+    Veículo: <strong>{{ vehicle.licensePlate }}</strong>
+    &nbsp;·&nbsp;
+    Status atual: <strong>{{ statusLabels[vehicle.status] }}</strong>
+  </p>
+
+  <form [formGroup]="form" class="status-form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Novo status</mat-label>
+      <mat-select formControlName="status">
+        @for (s of statusOptions; track s) {
+          <mat-option [value]="s">{{ statusLabels[s] }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Observação (opcional)</mat-label>
+      <textarea matInput formControlName="notes" rows="3" maxlength="500"></textarea>
+      <mat-hint align="end">{{ form.controls.notes.value.length }}/500</mat-hint>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()" [disabled]="loading()">Cancelar</button>
+  <button
+    mat-flat-button
+    color="primary"
+    (click)="submit()"
+    [disabled]="form.invalid || loading()"
+  >
+    @if (loading()) {
+      <mat-spinner diameter="18" />
+    } @else {
+      Salvar
+    }
+  </button>
+</mat-dialog-actions>
